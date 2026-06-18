@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Password Generator</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Poppins',sans-serif;
+        }
+
+        body{
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:linear-gradient(135deg,#0f172a,#1e293b,#312e81);
+        }
+
+        .container{
+            width:100%;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+        }
+
+        .card{
+            width:430px;
+            background:rgba(255,255,255,0.08);
+            backdrop-filter:blur(15px);
+            border:1px solid rgba(255,255,255,.2);
+            border-radius:20px;
+            padding:30px;
+            box-shadow:0 20px 40px rgba(0,0,0,.4);
+            color:#fff;
+        }
+
+        .card h1{
+            text-align:center;
+            margin-bottom:10px;
+            font-size:30px;
+            color:#ffffff;
+        }
+
+        .card h1 i{
+            color:#38bdf8;
+        }
+
+        .subtitle{
+            text-align:center;
+            color:#cbd5e1;
+            margin-bottom:25px;
+            font-size:15px;
+        }
+
+        .password-box{
+            display:flex;
+            align-items:center;
+            background:#0f172a;
+            border:2px solid #334155;
+            border-radius:12px;
+            overflow:hidden;
+            margin-bottom:25px;
+        }
+
+        .password-box input{
+            flex:1;
+            min-width:0;
+            border:none;
+            outline:none;
+            background:transparent;
+            color:#fff;
+            padding:15px;
+            font-size:18px;
+            letter-spacing:1px;
+        }
+
+        .password-box button{
+            width:50px;
+            height:50px;
+            flex-shrink:0;
+            border:none;
+            background:none;
+            color:#94a3b8;
+            cursor:pointer;
+            font-size:16px;
+            transition:.3s;
+        }
+
+        .password-box button:hover{
+            color:#38bdf8;
+        }
+
+        button:focus-visible,
+        input:focus-visible{
+            outline:2px solid #38bdf8;
+            outline-offset:2px;
+        }
+
+        .setting{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:12px;
+        }
+
+        .setting label{
+            color:white;
+            font-weight:500;
+        }
+
+        .setting span{
+            color:#38bdf8;
+            font-weight:700;
+        }
+
+        input[type=range]{
+            width:100%;
+            margin-bottom:25px;
+            accent-color:#3b82f6;
+        }
+
+        .options{
+            display:flex;
+            flex-direction:column;
+            gap:15px;
+            margin-bottom:25px;
+        }
+
+        .options label{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            cursor:pointer;
+            color:#e2e8f0;
+        }
+
+        .options input{
+            width:18px;
+            height:18px;
+            accent-color:#3b82f6;
+        }
+
+        .strength{
+            margin-bottom:25px;
+        }
+
+        .strength-bar{
+            width:100%;
+            height:10px;
+            background:#334155;
+            border-radius:20px;
+            overflow:hidden;
+        }
+
+        #bar{
+            width:0%;
+            height:100%;
+            background:linear-gradient(90deg,#22c55e,#4ade80);
+            transition:width .4s, background .4s;
+        }
+
+        #strengthText{
+            display:block;
+            text-align:right;
+            margin-top:8px;
+            font-weight:600;
+        }
+
+        #generateBtn{
+            width:100%;
+            border:none;
+            background:linear-gradient(135deg,#3b82f6,#2563eb);
+            color:white;
+            padding:15px;
+            border-radius:12px;
+            cursor:pointer;
+            font-size:17px;
+            font-weight:600;
+            transition:.3s;
+        }
+
+        #generateBtn:hover{
+            transform:translateY(-3px);
+            box-shadow:0 10px 25px rgba(59,130,246,.5);
+        }
+
+        #toast{
+            position:fixed;
+            bottom:20px;
+            right:20px;
+            background:#22c55e;
+            color:#fff;
+            padding:12px 18px;
+            border-radius:8px;
+            font-weight:500;
+            box-shadow:0 10px 25px rgba(0,0,0,.35);
+            opacity:0;
+            visibility:hidden;
+            transform:translateY(10px);
+            transition:opacity .3s ease, transform .3s ease;
+            z-index:1000;
+        }
+
+        #toast.show{
+            opacity:1;
+            visibility:visible;
+            transform:translateY(0);
+        }
+
+        #toast.error{
+            background:#ef4444;
+        }
+
+        @media(max-width:500px){
+            .card{
+                width:100%;
+                padding:25px;
+            }
+            .card h1{
+                font-size:24px;
+            }
+            .password-box input{
+                font-size:15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="card">
+
+        <h1><i class="fa-solid fa-lock"></i> Password Generator</h1>
+        <p class="subtitle">Generate strong and secure passwords instantly.</p>
+
+        <div class="password-box">
+            <input
+                type="password"
+                id="password"
+                readonly
+                placeholder="Click Generate Password"
+                aria-label="Generated password"
+            >
+            <button id="copyBtn" type="button" aria-label="Copy password">
+                <i class="fa-regular fa-copy"></i>
+            </button>
+            <button id="showBtn" type="button" aria-label="Show password">
+                <i class="fa-regular fa-eye"></i>
+            </button>
+        </div>
+
+        <div class="setting">
+            <label for="length">Password Length</label>
+            <span id="lengthValue">12</span>
+        </div>
+
+        <input type="range" id="length" min="8" max="30" value="12" aria-label="Password length">
+
+        <div class="options">
+            <label>
+                <input type="checkbox" id="uppercase" checked>
+                Uppercase Letters
+            </label>
+            <label>
+                <input type="checkbox" id="lowercase" checked>
+                Lowercase Letters
+            </label>
+            <label>
+                <input type="checkbox" id="numbers" checked>
+                Numbers
+            </label>
+            <label>
+                <input type="checkbox" id="symbols" checked>
+                Symbols
+            </label>
+        </div>
+
+        <div class="strength">
+            <div class="strength-bar">
+                <div id="bar"></div>
+            </div>
+            <span id="strengthText">Strong</span>
+        </div>
+
+        <button id="generateBtn" type="button">
+            <i class="fa-solid fa-bolt"></i>
+            Generate Password
+        </button>
+
+    </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+const CHAR_SETS = {
+    uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    lowercase: "abcdefghijklmnopqrstuvwxyz",
+    numbers:   "0123456789",
+    symbols:   "!@#$%^&*()_+{}[]<>?/",
+};
+
+const passwordField = document.getElementById("password");
+const lengthSlider   = document.getElementById("length");
+const lengthValue    = document.getElementById("lengthValue");
+
+const checkboxes = {
+    uppercase: document.getElementById("uppercase"),
+    lowercase: document.getElementById("lowercase"),
+    numbers:   document.getElementById("numbers"),
+    symbols:   document.getElementById("symbols"),
+};
+
+const generateBtn = document.getElementById("generateBtn");
+const copyBtn      = document.getElementById("copyBtn");
+const showBtn       = document.getElementById("showBtn");
+
+const strengthBar  = document.getElementById("bar");
+const strengthText = document.getElementById("strengthText");
+const toast         = document.getElementById("toast");
+
+let toastTimeoutId = null;
+
+function secureRandomInt(maxExclusive) {
+    const buffer = new Uint32Array(1);
+    window.crypto.getRandomValues(buffer);
+    return buffer[0] % maxExclusive;
+}
+
+function secureShuffle(items) {
+    for (let i = items.length - 1; i > 0; i--) {
+        const j = secureRandomInt(i + 1);
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+    return items;
+}
+
+function getSelectedCategories() {
+    return Object.keys(checkboxes).filter((key) => checkboxes[key].checked);
+}
+
+function generatePassword() {
+    const length = Number(lengthSlider.value);
+    const selected = getSelectedCategories();
+
+    if (selected.length === 0) {
+        showToast("Select at least one character type", true);
+        return;
+    }
+
+    const chars = selected.map(
+        (key) => CHAR_SETS[key][secureRandomInt(CHAR_SETS[key].length)]
+    );
+
+    const pool = selected.map((key) => CHAR_SETS[key]).join("");
+    while (chars.length < length) {
+        chars.push(pool[secureRandomInt(pool.length)]);
+    }
+
+    secureShuffle(chars);
+    passwordField.value = chars.join("");
+
+    updateStrength(selected.length, length);
+}
+
+function updateStrength(categoryCount, length) {
+    let score = categoryCount;
+    if (length >= 12) score++;
+    if (length >= 16) score++;
+
+    if (score <= 2) {
+        setStrength("30%", "#ef4444", "Weak");
+    } else if (score <= 4) {
+        setStrength("65%", "#f59e0b", "Medium");
+    } else {
+        setStrength("100%", "#22c55e", "Strong");
+    }
+}
+
+function setStrength(width, color, label) {
+    strengthBar.style.width = width;
+    strengthBar.style.background = color;
+    strengthText.textContent = label;
+    strengthText.style.color = color;
+}
+
+function showToast(message, isError = false) {
+    toast.textContent = message;
+    toast.classList.toggle("error", isError);
+    toast.classList.add("show");
+
+    clearTimeout(toastTimeoutId);
+    toastTimeoutId = setTimeout(() => toast.classList.remove("show"), 2000);
+}
+
+lengthSlider.addEventListener("input", () => {
+    lengthValue.textContent = lengthSlider.value;
+});
+
+generateBtn.addEventListener("click", generatePassword);
+
+copyBtn.addEventListener("click", async () => {
+    if (!passwordField.value) {
+        showToast("Generate a password first", true);
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(passwordField.value);
+        showToast("Password copied successfully!");
+    } catch (err) {
+        try {
+            const tempInput = document.createElement("textarea");
+            tempInput.value = passwordField.value;
+            tempInput.style.position = "fixed";
+            tempInput.style.opacity = "0";
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            tempInput.remove();
+            showToast("Password copied successfully!");
+        } catch (fallbackErr) {
+            showToast("Copy failed — please copy manually", true);
+        }
+    }
+});
+
+showBtn.addEventListener("click", () => {
+    const isHidden = passwordField.type === "password";
+    passwordField.type = isHidden ? "text" : "password";
+    showBtn.innerHTML = isHidden
+        ? '<i class="fa-solid fa-eye-slash"></i>'
+        : '<i class="fa-regular fa-eye"></i>';
+    showBtn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+});
+
+generatePassword();
+</script>
+
+</body>
+</html>
